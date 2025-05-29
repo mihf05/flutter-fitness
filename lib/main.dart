@@ -17,7 +17,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),
         useMaterial3: true,
-      ),      home: const IntroPage()
+      ),
+      home: const IntroPage()
         // home:  WorkoutSelectorPage()
     );
   }
