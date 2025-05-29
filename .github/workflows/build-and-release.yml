@@ -1,0 +1,230 @@
+name: Build and Release - Simple
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+
+env:
+  FLUTTER_VERSION: '3.24.0'
+
+jobs:
+  # Build Android
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build APK
+        run: flutter build apk --release
+      
+      - name: Build AAB
+        run: flutter build appbundle --release
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+      
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  # Build iOS
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+      
+      - name: Create IPA
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../../../app-release.ipa Payload/
+      
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: app-release.ipa
+          retention-days: 30
+
+  # Build Windows
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+      
+      - name: Create Windows platform if needed
+        run: |
+          if (!(Test-Path "windows")) {
+            flutter create --platforms=windows .
+          }
+        shell: powershell
+      
+      - name: Build Windows
+        run: flutter build windows --release
+      
+      - name: Create Windows Archive
+        run: |
+          $SourcePath = "build\windows\x64\runner\Release"
+          $DestinationPath = "windows-release.zip"
+          Compress-Archive -Path "$SourcePath\*" -DestinationPath $DestinationPath
+        shell: powershell
+      
+      - name: Upload Windows Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: windows-release.zip
+          retention-days: 30
+
+  # Build Web
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build Web
+        run: flutter build web --release
+      
+      - name: Create Web Archive
+        run: |
+          cd build/web
+          tar -czf ../../web-release.tar.gz *
+      
+      - name: Upload Web Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-release
+          path: web-release.tar.gz
+          retention-days: 30
+
+  # Create Release if on main branch
+  release:
+    needs: [build-android, build-ios, build-windows, build-web]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Get version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./release-assets
+      
+      - name: List downloaded files
+        run: find ./release-assets -type f -ls
+      
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}-${{ github.run_number }}
+          name: GymApp Release v${{ steps.version.outputs.version }}
+          body: |
+            ## 🏋️ GymApp Release v${{ steps.version.outputs.version }}
+            
+            Automated release created from commit: ${{ github.sha }}
+            
+            ### 📱 Platform Downloads
+            
+            - **Android APK** - Direct installation file for Android devices
+            - **Android AAB** - Google Play Store bundle format
+            - **iOS IPA** - iOS installation package (requires code signing for device installation)
+            - **Windows ZIP** - Desktop application for Windows
+            - **Web Build** - Progressive web app version
+            
+            ### 🚀 Installation Instructions
+            
+            #### Android APK
+            1. Download the APK file
+            2. Enable "Install from unknown sources" in Android settings
+            3. Install the downloaded APK
+            
+            #### Windows
+            1. Download and extract the Windows ZIP file
+            2. Run the executable inside the extracted folder
+            
+            #### Web
+            1. Download and extract the web build
+            2. Serve the files using any web server
+            
+            > **Note**: iOS builds are not code-signed. For device installation, you'll need to sign with your Apple Developer certificate.
+          draft: false
+          prerelease: false
+          files: |
+            ./release-assets/android-apk/app-release.apk
+            ./release-assets/android-aab/app-release.aab
+            ./release-assets/ios-ipa/app-release.ipa
+            ./release-assets/windows-release/windows-release.zip
+            ./release-assets/web-release/web-release.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

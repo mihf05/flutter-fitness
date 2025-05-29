@@ -1,0 +1,280 @@
+name: Build and Release Multi-Platform App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Job to check if we should create a release
+  check-release:
+    runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.check.outputs.should-release }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version found: $VERSION"
+      
+      - name: Check if release should be created
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "should-release=true" >> $GITHUB_OUTPUT
+            echo "Will create release for main branch push"
+          else
+            echo "should-release=false" >> $GITHUB_OUTPUT
+            echo "Will not create release (not a main branch push)"
+          fi
+
+  # Build Android APK and AAB
+  build-android:
+    needs: check-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Run tests
+        run: flutter test
+      
+      - name: Build Android APK
+        run: flutter build apk --release
+      
+      - name: Build Android AAB
+        run: flutter build appbundle --release
+      
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+      
+      - name: Upload Android AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
+  # Build iOS IPA
+  build-ios:
+    needs: check-release
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Run tests
+        run: flutter test
+      
+      - name: Build iOS (no code signing)
+        run: |
+          flutter build ios --release --no-codesign
+      
+      - name: Create iOS Archive
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../../../ios-app.ipa Payload/
+      
+      - name: Upload iOS IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: ios-app.ipa
+  # Build Windows EXE and MSIX
+  build-windows:
+    needs: check-release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Run tests
+        run: flutter test
+      
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+      
+      - name: Create Windows platform files if they don't exist
+        run: |
+          if (-not (Test-Path "windows")) {
+            flutter create --platforms=windows .
+          }
+        shell: powershell
+      
+      - name: Build Windows
+        run: flutter build windows --release
+      
+      - name: Create Windows ZIP
+        run: |
+          cd build/windows/x64/runner/Release
+          7z a -tzip ../../../../../windows-app.zip *
+        shell: cmd
+      
+      - name: Upload Windows ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-zip
+          path: windows-app.zip
+
+  # Create GitHub Release
+  create-release:
+    needs: [check-release, build-android, build-ios, build-windows]
+    runs-on: ubuntu-latest
+    if: needs.check-release.outputs.should-release == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      
+      - name: Display structure of downloaded files
+        run: ls -la ./artifacts/**/*
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.check-release.outputs.version }}
+          release_name: GymApp v${{ needs.check-release.outputs.version }}
+          body: |
+            ## GymApp Release v${{ needs.check-release.outputs.version }}
+            
+            ### What's New
+            - Latest updates and improvements
+            - Bug fixes and performance enhancements
+            
+            ### Downloads
+            - **Android APK**: For direct installation on Android devices
+            - **Android AAB**: For Google Play Store distribution
+            - **iOS IPA**: For iOS devices (requires proper code signing for installation)
+            - **Windows ZIP**: For Windows desktop installation
+            
+            ### Installation Instructions
+            
+            #### Android APK
+            1. Download the APK file
+            2. Enable "Install from unknown sources" in your Android settings
+            3. Install the APK file
+            
+            #### Windows
+            1. Download the Windows ZIP file
+            2. Extract the contents
+            3. Run the executable file
+            
+            #### iOS
+            Note: The iOS build is unsigned. For actual distribution, you'll need to:
+            1. Code sign the app with your Apple Developer account
+            2. Distribute through TestFlight or App Store
+          draft: false
+          prerelease: false
+      
+      - name: Upload Android APK to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/android-apk/app-release.apk
+          asset_name: GymApp-v${{ needs.check-release.outputs.version }}-android.apk
+          asset_content_type: application/vnd.android.package-archive
+      
+      - name: Upload Android AAB to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/android-aab/app-release.aab
+          asset_name: GymApp-v${{ needs.check-release.outputs.version }}-android.aab
+          asset_content_type: application/octet-stream
+      
+      - name: Upload iOS IPA to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/ios-ipa/ios-app.ipa
+          asset_name: GymApp-v${{ needs.check-release.outputs.version }}-ios.ipa
+          asset_content_type: application/octet-stream
+      
+      - name: Upload Windows ZIP to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/windows-zip/windows-app.zip
+          asset_name: GymApp-v${{ needs.check-release.outputs.version }}-windows.zip
+          asset_content_type: application/zip
+
+  # Optional: Build Web version
+  build-web:
+    needs: check-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build Web
+        run: flutter build web --release
+      
+      - name: Upload Web Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web/
