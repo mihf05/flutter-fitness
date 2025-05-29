@@ -210,28 +210,12 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                 ),
               ),
 
-              SizedBox(height: 48),
-
-              // Choice Chips Container (keeping original ChoiceChipWidget)
+              SizedBox(height: 48), // Choice Chips (without card container)
               Expanded(
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 24),
-                    padding: EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: surfaceColor,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isDarkMode 
-                              ? Colors.black.withOpacity(0.3)
-                              : Colors.black.withOpacity(0.04),
-                          blurRadius: isDarkMode ? 12 : 20,
-                          offset: Offset(0, isDarkMode ? 6 : 8),
-                        ),
-                      ],
-                    ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
                     child: SingleChildScrollView(
                       child: Wrap(
                         spacing: 12.0,
