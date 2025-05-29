@@ -226,4 +226,4 @@ jobs:
             ./release-assets/ios-ipa/app-release.ipa
             ./release-assets/windows-release/windows-release.zip
             ./release-assets/web-release/web-release.tar.gz
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
