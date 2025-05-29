@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:multi_choice_widget/workout_selection.dart';
+import 'package:multi_choice_widget/intro_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,8 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),
         useMaterial3: true,
-      ),
-      home:  WorkoutSelectionPage()
+      ),      home: const IntroPage()
         // home:  WorkoutSelectorPage()
     );
   }
