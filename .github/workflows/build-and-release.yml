@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '17'  # Changed from 11 to 17
       
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -185,9 +185,9 @@ jobs:
       
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: v${{ steps.version.outputs.version }}-${{ github.run_number }}
+          tag: v${{ steps.version.outputs.version }}-${{ github.run_number }}
           name: Multi Choice Widget Release v${{ steps.version.outputs.version }}
           body: |
             ## 🎯 Multi Choice Widget Release v${{ steps.version.outputs.version }}
@@ -220,11 +220,10 @@ jobs:
             > **Note**: iOS builds are not code-signed. For device installation, you'll need to sign with your Apple Developer certificate.
           draft: false
           prerelease: false
-          files: |
+          artifacts: |
             ./release-assets/android-apk/app-release.apk
             ./release-assets/android-aab/app-release.aab
             ./release-assets/ios-ipa/app-release.ipa
             ./release-assets/windows-release/windows-release.zip
             ./release-assets/web-release/web-release.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
