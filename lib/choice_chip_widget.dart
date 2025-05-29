@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ChoiceChipWidget extends StatelessWidget {
   final String? iconData;
@@ -58,7 +59,7 @@ class ChoiceChipWidget extends StatelessWidget {
               const SizedBox(width: 6.0), // Space between icon and text
               Text(
                 text,
-                style: TextStyle(
+                style: GoogleFonts.bricolageGrotesque(
                   color: contentColor,
                   fontWeight: FontWeight.w500,
                   fontSize: 16,

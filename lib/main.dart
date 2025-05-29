@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:multi_choice_widget/workout_selection.dart';
 
 void main() {
@@ -14,8 +15,7 @@ class MyApp extends StatelessWidget {
       title: 'GymApp Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // colorScheme: ColorScheme.p,
-        // fontFamily: 'Lato',
+        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),
         useMaterial3: true,
       ),
       home:  WorkoutSelectionPage()

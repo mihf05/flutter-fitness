@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -35,7 +36,7 @@ class ActionButton extends StatelessWidget {
         child: Center(
           child: Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.bricolageGrotesque(
               color: textColor,
               fontWeight: FontWeight.w500,
               fontSize: 18,
