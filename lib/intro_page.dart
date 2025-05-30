@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'workout_selection.dart';
+import 'app_scaffold.dart';
 
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
@@ -86,12 +86,11 @@ class _IntroPageState extends State<IntroPage>
     _logoController.dispose();
     super.dispose();
   }
-
   void _navigateToWorkoutSelection() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const WorkoutSelectionPage(),
+            const AppScaffold(),
         transitionDuration: const Duration(milliseconds: 600),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:multi_choice_widget/app_scaffold.dart';
 import 'package:multi_choice_widget/intro_page.dart';
 
 void main() {
@@ -19,7 +20,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const IntroPage()
-        // home:  WorkoutSelectorPage()
+      // If you want to skip the intro page and go directly to the app with navbar:
+      // home: const AppScaffold()
     );
   }
 }
