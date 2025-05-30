@@ -125,17 +125,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
               padding: EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  Text(
-                    "Choose two or more to continue",
-                    style: GoogleFonts.bricolageGrotesque(
-                      color: subtitleColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
                   SizedBox(height: 12),
-                  
                   // Progress Indicator
                   AnimatedContainer(
                     duration: Duration(milliseconds: 300),
