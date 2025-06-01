@@ -188,9 +188,9 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ steps.version.outputs.version }}-${{ github.run_number }}
-          name: Multi Choice Widget Release v${{ steps.version.outputs.version }}
+          name: Fitness Pro Release v${{ steps.version.outputs.version }}
           body: |
-            ## 🎯 Multi Choice Widget Release v${{ steps.version.outputs.version }}
+            ## 🎯 Fitness Pro Release v${{ steps.version.outputs.version }}
             
             Automated release created from commit: ${{ github.sha }}
             

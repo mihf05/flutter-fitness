@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:multi_choice_widget/app_scaffold.dart';
-import 'package:multi_choice_widget/app_theme.dart';
-import 'package:multi_choice_widget/intro_page.dart';
-import 'package:multi_choice_widget/theme_service.dart';
+import 'package:fitness_pro/app_scaffold.dart';
+import 'package:fitness_pro/app_theme.dart';
+import 'package:fitness_pro/intro_page.dart';
+import 'package:fitness_pro/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 

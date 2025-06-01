@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:multi_choice_widget/theme_service.dart';
+import 'package:fitness_pro/theme_service.dart';
 import 'package:provider/provider.dart';
 
 class BottomNavBar extends StatelessWidget {

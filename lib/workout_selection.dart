@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:multi_choice_widget/action_button.dart';
-import 'package:multi_choice_widget/theme_service.dart';
+import 'package:fitness_pro/action_button.dart';
+import 'package:fitness_pro/theme_service.dart';
 import 'package:provider/provider.dart';
 
 import 'choice_chip_widget.dart';

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:multi_choice_widget/bottom_navbar.dart';
-import 'package:multi_choice_widget/home_page.dart';
-import 'package:multi_choice_widget/profile_page.dart';
-import 'package:multi_choice_widget/progress_page.dart';
-import 'package:multi_choice_widget/theme_service.dart';
-import 'package:multi_choice_widget/theme_toggle_button.dart';
-import 'package:multi_choice_widget/workout_selection.dart';
+import 'package:fitness_pro/bottom_navbar.dart';
+import 'package:fitness_pro/home_page.dart';
+import 'package:fitness_pro/profile_page.dart';
+import 'package:fitness_pro/progress_page.dart';
+import 'package:fitness_pro/theme_service.dart';
+import 'package:fitness_pro/theme_toggle_button.dart';
+import 'package:fitness_pro/workout_selection.dart';
 import 'package:provider/provider.dart';
 
 class AppScaffold extends StatefulWidget {
