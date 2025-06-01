@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -12,129 +13,163 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if dark mode is enabled (based on MediaQuery)
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    // Colors based on the app's theme system
-    final backgroundColor = isDarkMode ? const Color(0xFF1A1A1D) : Colors.white;
-    final selectedItemColor = const Color(0xFF005C5C);  // Primary teal color
-    final unselectedItemColor = isDarkMode ? const Color(0xFF8A8A8A) : const Color(0xFFAAAAAA);
-    final shadowColor = isDarkMode ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.1);
+    
+    // Glassmorphism colors
+    final glassColor = isDarkMode 
+        ? Colors.white.withOpacity(0.1) 
+        : Colors.white.withOpacity(0.25);
+    final borderColor = isDarkMode 
+        ? Colors.white.withOpacity(0.2) 
+        : Colors.white.withOpacity(0.3);
+    final selectedItemColor = const Color(0xFF005C5C);
+    final unselectedItemColor = isDarkMode 
+        ? Colors.white.withOpacity(0.6) 
+        : Colors.black.withOpacity(0.5);
 
     return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: shadowColor,
-            blurRadius: 10,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
+      margin: const EdgeInsets.all(16),
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20.0),
-          topRight: Radius.circular(20.0),
-        ),
-        child: BottomNavigationBar(
-          backgroundColor: backgroundColor,
-          currentIndex: currentIndex,
-          onTap: onTap,
-          selectedItemColor: selectedItemColor,
-          unselectedItemColor: unselectedItemColor,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
+        borderRadius: BorderRadius.circular(25),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: glassColor,
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: borderColor,
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.1),
+                  blurRadius: 1,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: BottomNavigationBar(
+              backgroundColor: Colors.transparent,
+              currentIndex: currentIndex,
+              onTap: onTap,
+              selectedItemColor: selectedItemColor,
+              unselectedItemColor: unselectedItemColor,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              elevation: 0,
+              items: [
+                _buildNavItem(
+                  iconPath: 'assets/icons/home_icon.png',
+                  label: 'Home',
+                  fallbackIcon: Icons.home_outlined,
+                  activeFallbackIcon: Icons.home_rounded,
+                ),
+                _buildNavItem(
+                  iconPath: 'assets/icons/dumbbell_icon.png',
+                  label: 'Workouts',
+                  fallbackIcon: Icons.fitness_center_outlined,
+                  activeFallbackIcon: Icons.fitness_center,
+                ),
+                _buildNavItem(
+                  iconPath: 'assets/icons/chart.png',
+                  label: 'Progress',
+                  fallbackIcon: Icons.bar_chart_outlined,
+                  activeFallbackIcon: Icons.bar_chart,
+                ),
+                _buildNavItem(
+                  iconPath: 'assets/icons/profile.png',
+                  label: 'Profile',
+                  fallbackIcon: Icons.person_outlined,
+                  activeFallbackIcon: Icons.person,
+                ),
+              ],
+            ),
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-          elevation: 0,
-          items: [
-            BottomNavigationBarItem(
-              icon: Image.network(
-                'assets/icons/home_icon.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.home_outlined),
-                loadingBuilder: (context, child, loadingProgress) =>
-                  loadingProgress == null ? child : const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              activeIcon: Image.network(
-                'assets/icons/home_icon.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.home_rounded),
-                loadingBuilder: (context, child, loadingProgress) =>
-                  loadingProgress == null ? child : const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Image.network(
-                'assets/icons/dumbbell_icon.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.fitness_center_outlined),
-                loadingBuilder: (context, child, loadingProgress) =>
-                  loadingProgress == null ? child : const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              activeIcon: Image.network(
-                'assets/icons/dumbbell_icon.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.fitness_center),
-                loadingBuilder: (context, child, loadingProgress) =>
-                  loadingProgress == null ? child : const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              label: 'Workouts',
-            ),
-            BottomNavigationBarItem(
-              icon: Image.network(
-                'assets/icons/chart.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.bar_chart_outlined),
-                loadingBuilder: (context, child, loadingProgress) =>
-                  loadingProgress == null ? child : const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              activeIcon: Image.network(
-                'assets/icons/chart.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.bar_chart),
-                loadingBuilder: (context, child, loadingProgress) =>
-                  loadingProgress == null ? child : const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              label: 'Progress',
-            ),
-            BottomNavigationBarItem(
-              icon: Image.network(
-                'assets/icons/profile.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.person_outlined),
-                loadingBuilder: (context, child, loadingProgress) =>
-                  loadingProgress == null ? child : const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              activeIcon: Image.network(
-                'assets/icons/profile.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.person),
-                loadingBuilder: (context, child, loadingProgress) =>
-                  loadingProgress == null ? child : const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              label: 'Profile',
-            ),
-          ],
         ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem({
+    required String iconPath,
+    required String label,
+    required IconData fallbackIcon,
+    required IconData activeFallbackIcon,
+  }) {
+    return BottomNavigationBarItem(
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Image.network(
+          iconPath,
+          width: 24,
+          height: 24,
+          errorBuilder: (context, error, stackTrace) => Icon(
+            fallbackIcon,
+            size: 24,
+          ),
+          loadingBuilder: (context, child, loadingProgress) =>
+            loadingProgress == null 
+              ? child 
+              : SizedBox(
+                  width: 24, 
+                  height: 24, 
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white.withOpacity(0.5),
+                  ),
+                ),
+        ),
+      ),
+      activeIcon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF005C5C).withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFF005C5C).withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Image.network(
+          iconPath,
+          width: 24,
+          height: 24,
+          errorBuilder: (context, error, stackTrace) => Icon(
+            activeFallbackIcon,
+            size: 24,
+          ),
+          loadingBuilder: (context, child, loadingProgress) =>
+            loadingProgress == null 
+              ? child 
+              : SizedBox(
+                  width: 24, 
+                  height: 24, 
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: const Color(0xFF005C5C),
+                  ),
+                ),
+        ),
+      ),
+      label: label,
     );
   }
 }
