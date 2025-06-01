@@ -84,6 +84,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   Color get textColor => isDarkMode ? Color(0xFFE8E8E8) : Color(0xFF2A2A2A);
   Color get subtitleColor => isDarkMode ? Color(0xFFB0B0B0) : Color(0xFF666666);
   Color get accentColor => isDarkMode ? Color(0xFF6366F1) : Color(0xFF4F46E5);
+  
   @override
   Widget build(BuildContext context) {
     // Update isDarkMode based on Theme
@@ -118,54 +119,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
 
           SizedBox(height: 48),
 
-          // Minimal Header Section
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  SizedBox(height: 12),
-                  // Progress Indicator
-                  AnimatedContainer(
-                    duration: Duration(milliseconds: 300),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: count >= 2 
-                          ? accentColor.withOpacity(0.1)
-                          : surfaceColor,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: count >= 2 
-                            ? accentColor.withOpacity(0.3)
-                            : Colors.transparent,
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isDarkMode 
-                              ? Colors.black.withOpacity(0.2)
-                              : Colors.black.withOpacity(0.03),
-                          blurRadius: isDarkMode ? 6 : 8,
-                          offset: Offset(0, isDarkMode ? 2 : 4),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      "$count selected",
-                      style: GoogleFonts.bricolageGrotesque(
-                        color: count >= 2 ? accentColor : subtitleColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          SizedBox(height: 48), // Choice Chips (without card container)
+          // Choice Chips (without header section)
           Expanded(
             child: SlideTransition(
               position: _slideAnimation,
@@ -201,7 +155,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
             ),
           ),
 
-          // Minimal Continue Button
+          // Combined Counter and Continue Button
           SlideTransition(
             position: Tween<Offset>(
               begin: Offset(0, 0.2),
@@ -217,17 +171,23 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                 width: double.infinity,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: count > 1 ? accentColor : subtitleColor.withOpacity(0.3),
+                  color: count > 1 ? accentColor : surfaceColor,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: count > 1
-                      ? [
-                          BoxShadow(
-                            color: accentColor.withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: Offset(0, 6),
-                          ),
-                        ]
-                      : [],
+                  border: count <= 1 ? Border.all(
+                    color: subtitleColor.withOpacity(0.2),
+                    width: 1,
+                  ) : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: count > 1 
+                          ? accentColor.withOpacity(0.3)
+                          : isDarkMode 
+                              ? Colors.black.withOpacity(0.2)
+                              : Colors.black.withOpacity(0.05),
+                      blurRadius: count > 1 ? 12 : 8,
+                      offset: Offset(0, count > 1 ? 6 : 4),
+                    ),
+                  ],
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -239,17 +199,67 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                             print("Continue button clicked");
                           }
                         : null,
-                    child: Center(
-                      child: Text(
-                        "Continue",
-                        style: GoogleFonts.bricolageGrotesque(
-                          color: count > 1 
-                              ? Colors.white 
-                              : Colors.white.withOpacity(0.7),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.2,
-                        ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          // Counter Circle
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: count > 1 
+                                  ? Colors.white.withOpacity(0.2)
+                                  : textColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "$count",
+                                style: GoogleFonts.bricolageGrotesque(
+                                  color: count > 1 
+                                      ? Colors.white 
+                                      : textColor.withOpacity(0.7),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                          SizedBox(width: 12),
+                          
+                          // Text Content
+                          Expanded(
+                            child: Text(
+                              count == 0 
+                                  ? "Select your focus areas"
+                                  : count == 1
+                                      ? "Select at least one more"
+                                      : "Continue",
+                              style: GoogleFonts.bricolageGrotesque(
+                                color: count > 1 
+                                    ? Colors.white 
+                                    : textColor.withOpacity(0.7),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                          ),
+                          
+                          // Arrow Icon (only when ready to continue)
+                          if (count > 1)
+                            AnimatedContainer(
+                              duration: Duration(milliseconds: 300),
+                              child: Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
