@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:multi_choice_widget/action_button.dart';
+import 'package:fitness_pro/action_button.dart';
+import 'package:fitness_pro/theme_service.dart';
+import 'package:provider/provider.dart';
 
 import 'choice_chip_widget.dart';
 
@@ -40,6 +42,9 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
     "Competitive": "calendar_icon.png",
     "Nutrition": "protein_shaker_icon.png",
   };
+
+  // User preferences for each workout type
+  Map<String, Map<String, dynamic>> workoutPreferences = {};
 
   int count = 0;
   bool isDarkMode = false;
@@ -85,343 +90,353 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   Color get subtitleColor => isDarkMode ? Color(0xFFB0B0B0) : Color(0xFF666666);
   Color get accentColor => isDarkMode ? Color(0xFF6366F1) : Color(0xFF4F46E5);
 
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 300),
-      child: Scaffold(
-        backgroundColor: backgroundColor,
-        body: SafeArea(
-          child: Column(
-            children: [
-              // Minimal App Bar
-              SlideTransition(
-                position: _slideAnimation,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
-                  child: Row(
-                    children: [
-                      // Back Button
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: surfaceColor,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDarkMode 
-                                  ? Colors.black.withOpacity(0.3)
-                                  : Colors.black.withOpacity(0.05),
-                              blurRadius: isDarkMode ? 8 : 12,
-                              offset: Offset(0, isDarkMode ? 4 : 6),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_rounded,
-                          color: textColor,
-                          size: 20,
-                        ),
-                      ),
-                        Expanded(
-                        child: Text(
-                          "Focus Area",
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.bricolageGrotesque(
-                            color: textColor,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                      ),
-                      
-                      // Theme Toggle Button (will be implemented separately)
-                      ThemeToggleButton(
-                        isDarkMode: isDarkMode,
-                        onToggle: () {
-                          setState(() {
-                            isDarkMode = !isDarkMode;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+  // Show preferences dialog when workout is selected
+  void _showPreferencesDialog(String workoutType) {
+    double weight = workoutPreferences[workoutType]?['weight'] ?? 70.0;
+    double lightingIntensity = workoutPreferences[workoutType]?['lighting'] ?? 50.0;
+    int exerciseCount = workoutPreferences[workoutType]?['count'] ?? 10;
+    int duration = workoutPreferences[workoutType]?['time'] ?? 30;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: surfaceColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                '$workoutType Preferences',
+                style: GoogleFonts.bricolageGrotesque(
+                  color: textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-
-              SizedBox(height: 48),
-
-              // Minimal Header Section
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      Text(
-                        "Choose two or more to continue",
-                        style: GoogleFonts.bricolageGrotesque(
-                          color: subtitleColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      
-                      // Progress Indicator
-                      AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: count >= 2 
-                              ? accentColor.withOpacity(0.1)
-                              : surfaceColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: count >= 2 
-                                ? accentColor.withOpacity(0.3)
-                                : Colors.transparent,
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDarkMode 
-                                  ? Colors.black.withOpacity(0.2)
-                                  : Colors.black.withOpacity(0.03),
-                              blurRadius: isDarkMode ? 6 : 8,
-                              offset: Offset(0, isDarkMode ? 2 : 4),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          "$count selected",
-                          style: GoogleFonts.bricolageGrotesque(
-                            color: count >= 2 ? accentColor : subtitleColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              content: Container(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Weight Slider
+                    _buildSliderSection(
+                      'Weight (kg)',
+                      weight,
+                      20.0,
+                      150.0,
+                      (value) => setDialogState(() => weight = value),
+                      '${weight.round()} kg',
+                    ),
+                    SizedBox(height: 16),
+                    
+                    // Lighting Intensity Slider
+                    _buildSliderSection(
+                      'Lighting Intensity',
+                      lightingIntensity,
+                      0.0,
+                      100.0,
+                      (value) => setDialogState(() => lightingIntensity = value),
+                      '${lightingIntensity.round()}%',
+                    ),
+                    SizedBox(height: 16),
+                    
+                    // Exercise Count Slider
+                    _buildSliderSection(
+                      'Exercise Count',
+                      exerciseCount.toDouble(),
+                      5.0,
+                      50.0,
+                      (value) => setDialogState(() => exerciseCount = value.round()),
+                      '${exerciseCount} exercises',
+                    ),
+                    SizedBox(height: 16),
+                    
+                    // Duration Slider
+                    _buildSliderSection(
+                      'Duration (minutes)',
+                      duration.toDouble(),
+                      10.0,
+                      120.0,
+                      (value) => setDialogState(() => duration = value.round()),
+                      '${duration} min',
+                    ),
+                  ],
                 ),
               ),
-
-              SizedBox(height: 48), // Choice Chips (without card container)
-              Expanded(
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        spacing: 12.0,
-                        runSpacing: 12.0,
-                        alignment: WrapAlignment.center,
-                        children: workoutSelection.entries.map((entry) {
-                          return ChoiceChipWidget(
-                            iconData: iconsMap[entry.key],
-                            text: entry.key,
-                            isSelected: entry.value,
-                            onTap: () {
-                              setState(() {
-                                workoutSelection[entry.key] =
-                                    !workoutSelection[entry.key]!;
-
-                                if (workoutSelection[entry.key] == true) {
-                                  count += 1;
-                                } else {
-                                  count -= 1;
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.bricolageGrotesque(
+                      color: subtitleColor,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-              ),
-
-              // Minimal Continue Button
-              SlideTransition(
-                position: Tween<Offset>(
-                  begin: Offset(0, 0.2),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: _slideController,
-                  curve: Interval(0.3, 1.0, curve: Curves.easeOut),
-                )),
-                child: Container(
-                  margin: EdgeInsets.all(24),
-                  child: AnimatedContainer(
-                    duration: Duration(milliseconds: 300),
-                    width: double.infinity,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: count > 1 ? accentColor : subtitleColor.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: count > 1
-                          ? [
-                              BoxShadow(
-                                color: accentColor.withOpacity(0.3),
-                                blurRadius: 12,
-                                offset: Offset(0, 6),
-                              ),
-                            ]
-                          : [],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: count > 1
-                            ? () {
-                                print("I am being clicked");
-                              }
-                            : null,
-                        child: Center(
-                          child: Text(
-                            "Continue",
-                            style: GoogleFonts.bricolageGrotesque(
-                              color: count > 1 
-                                  ? Colors.white 
-                                  : Colors.white.withOpacity(0.7),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                        ),
-                      ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      workoutPreferences[workoutType] = {
+                        'weight': weight,
+                        'lighting': lightingIntensity,
+                        'count': exerciseCount,
+                        'time': duration,
+                      };
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accentColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Separate Theme Toggle Button Component
-class ThemeToggleButton extends StatefulWidget {
-  final bool isDarkMode;
-  final VoidCallback onToggle;
-
-  const ThemeToggleButton({
-    Key? key,
-    required this.isDarkMode,
-    required this.onToggle,
-  }) : super(key: key);
-
-  @override
-  State<ThemeToggleButton> createState() => _ThemeToggleButtonState();
-}
-
-class _ThemeToggleButtonState extends State<ThemeToggleButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-    
-    if (widget.isDarkMode) {
-      _controller.forward();
-    }
-  }
-
-  @override
-  void didUpdateWidget(ThemeToggleButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isDarkMode != oldWidget.isDarkMode) {
-      if (widget.isDarkMode) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Color surfaceColor = widget.isDarkMode ? Color(0xFF1A1A1D) : Colors.white;
-    Color textColor = widget.isDarkMode ? Color(0xFFE8E8E8) : Color(0xFF2A2A2A);
-    
-    return GestureDetector(
-      onTap: widget.onToggle,
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: surfaceColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: widget.isDarkMode 
-                  ? Colors.black.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.05),
-              blurRadius: widget.isDarkMode ? 8 : 12,
-              offset: Offset(0, widget.isDarkMode ? 4 : 6),
-            ),
-          ],
-        ),
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                // Sun Icon
-                Opacity(
-                  opacity: 1 - _animation.value,
-                  child: Transform.rotate(
-                    angle: _animation.value * 1.5,
-                    child: Icon(
-                      Icons.wb_sunny_rounded,
-                      color: textColor,
-                      size: 20,
-                    ),
-                  ),
-                ),
-                // Moon Icon
-                Opacity(
-                  opacity: _animation.value,
-                  child: Transform.rotate(
-                    angle: (1 - _animation.value) * -1.5,
-                    child: Icon(
-                      Icons.nightlight_round,
-                      color: textColor,
-                      size: 20,
+                  child: Text(
+                    'Save',
+                    style: GoogleFonts.bricolageGrotesque(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildSliderSection(String title, double value, double min, double max, 
+      Function(double) onChanged, String displayValue) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.bricolageGrotesque(
+                color: textColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              displayValue,
+              style: GoogleFonts.bricolageGrotesque(
+                color: accentColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
+        SizedBox(height: 8),
+        SliderTheme(
+          data: SliderThemeData(
+            trackHeight: 4,
+            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
+            overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
+            activeTrackColor: accentColor,
+            inactiveTrackColor: subtitleColor.withOpacity(0.3),
+            thumbColor: accentColor,
+            overlayColor: accentColor.withOpacity(0.2),
+          ),
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
+    );
+  }
+    @override
+  Widget build(BuildContext context) {
+    // Get theme from provider and update isDarkMode
+    final themeService = Provider.of<ThemeService>(context);
+    isDarkMode = themeService.isDarkMode;
+    
+    return SafeArea(
+      child: Column(
+        children: [
+          // Custom App Bar
+          SlideTransition(
+            position: _slideAnimation,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      "Focus Area",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.bricolageGrotesque(
+                        color: textColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(height: 24),
+
+          // Choice Chips
+          Expanded(
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 12.0,
+                    runSpacing: 12.0,
+                    alignment: WrapAlignment.center,
+                    children: workoutSelection.entries.map((entry) {
+                      return ChoiceChipWidget(
+                        iconData: iconsMap[entry.key],
+                        text: entry.key,
+                        isSelected: entry.value,
+                        onTap: () {
+                          if (!workoutSelection[entry.key]!) {
+                            // Show preferences dialog when selecting
+                            _showPreferencesDialog(entry.key!);
+                          }
+                          
+                          setState(() {
+                            workoutSelection[entry.key] = !workoutSelection[entry.key]!;
+
+                            if (workoutSelection[entry.key] == true) {
+                              count += 1;
+                            } else {
+                              count -= 1;
+                              // Remove preferences when deselected
+                              workoutPreferences.remove(entry.key);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Compact Combined Button
+          SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(0, 0.2),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: _slideController,
+              curve: Interval(0.3, 1.0, curve: Curves.easeOut),
+            )),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: count > 1 ? accentColor : surfaceColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: count <= 1 ? Border.all(
+                    color: subtitleColor.withOpacity(0.2),
+                    width: 1,
+                  ) : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: count > 1 
+                          ? accentColor.withOpacity(0.2)
+                          : Colors.black.withOpacity(0.03),
+                      blurRadius: count > 1 ? 8 : 4,
+                      offset: Offset(0, count > 1 ? 4 : 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: count > 1
+                        ? () {
+                            print("Continue with preferences: $workoutPreferences");
+                          }
+                        : null,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Compact Counter
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: count > 1 
+                                  ? Colors.white.withOpacity(0.2)
+                                  : accentColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "$count",
+                                style: GoogleFonts.bricolageGrotesque(
+                                  color: count > 1 
+                                      ? Colors.white 
+                                      : accentColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                          SizedBox(width: 12),
+                          
+                          // Compact Text
+                          Text(
+                            count > 1 ? "Continue" : "Select $count",
+                            style: GoogleFonts.bricolageGrotesque(
+                              color: count > 1 
+                                  ? Colors.white 
+                                  : textColor.withOpacity(0.6),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          
+                          if (count > 1) ...[
+                            SizedBox(width: 8),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
+// Removed ThemeToggleButton to avoid conflict with theme_toggle_button.dart

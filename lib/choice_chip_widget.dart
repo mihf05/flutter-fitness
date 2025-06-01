@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fitness_pro/theme_service.dart';
+import 'package:provider/provider.dart';
 
 class ChoiceChipWidget extends StatelessWidget {
   final String? iconData;
@@ -17,10 +19,19 @@ class ChoiceChipWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color backgroundColor = isSelected ? Color(0xFF005C5C) : Colors.white;
-    final Color contentColor = isSelected ? Colors.white : Color(0xFF1F2832);
-    final Color borderColor = isSelected ? Color(0xFF00CA9B) : Color(0xFFBDBDBD);
-    final Color shadowColor = isSelected ?  Color(0x4D006666) : Color(0x40000000);
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
+    
+    // Base colors
+    final Color baseBackgroundColor = isSelected ? Color(0xFF005C5C) : (isDarkMode ? Color(0xFF1A1A1D) : Colors.white);
+    final Color baseContentColor = isSelected ? Colors.white : (isDarkMode ? Colors.white : Color(0xFF1F2832));
+    final Color baseBorderColor = isSelected ? Color(0xFF00CA9B) : (isDarkMode ? Color(0xFF3A3A3D) : Color(0xFFBDBDBD));
+    final Color baseShadowColor = isSelected ? Color(0x4D006666) : (isDarkMode ? Color(0x40000000) : Color(0x40000000));
+    
+    final Color backgroundColor = baseBackgroundColor;
+    final Color contentColor = baseContentColor;
+    final Color borderColor = baseBorderColor;
+    final Color shadowColor = baseShadowColor;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),

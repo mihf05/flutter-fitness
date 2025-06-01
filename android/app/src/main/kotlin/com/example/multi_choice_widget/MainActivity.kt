@@ -1,4 +1,4 @@
-package com.example.multi_choice_widget
+package com.example.fitness_pro
 
 import io.flutter.embedding.android.FlutterActivity
 

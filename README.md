@@ -22,10 +22,12 @@ A beautiful and animated Flutter application showcasing custom choice chips with
 - Dynamic continue button state
 - Animated progress indicators
 
-🎨 **Theming**
-- Toggle between dark and light modes
-- Consistent color schemes
-- Smooth theme transitions
+🎨 **Theme System**
+- Toggle between dark and light modes with beautiful animations
+- Persistent theme preferences using SharedPreferences
+- Consistent color schemes across all app screens
+- Smooth theme transitions for all UI components
+- System theme integration with Provider pattern
 
 ## Getting Started
 
@@ -59,9 +61,12 @@ flutter run
 ```
 lib/
 ├── main.dart                 # Application entry point
+├── app_theme.dart            # Theme configurations for light/dark mode
+├── theme_service.dart        # Theme state management with persistence
+├── theme_toggle_button.dart  # Animated theme toggle button
 ├── workout_selection.dart    # Main workout selection page
 ├── choice_chip_widget.dart   # Custom choice chip component
-└── action_button.dart       # Reusable action button component
+└── action_button.dart        # Reusable action button component
 
 assets/
 ├── fonts/
@@ -91,15 +96,25 @@ A custom widget for selectable workout categories:
 
 ### ThemeToggleButton
 Animated button for switching between light and dark themes:
-- Smooth rotation animation
-- Theme-aware icons
+- Smooth rotation animation using AnimationController
+- Theme-aware icons (sun/moon)
 - Seamless state transitions
+- Persists theme preference
+
+### ThemeService
+Core service for managing app theme:
+- Singleton pattern for global theme state
+- Uses SharedPreferences for persistence
+- Notifies listeners when theme changes
+- Supports system, light, and dark modes
 
 ## Dependencies
 
 - **flutter**: Core Flutter framework
 - **google_fonts**: Custom typography (Bricolage Grotesque)
 - **cupertino_icons**: iOS-style icons
+- **provider**: State management and theme dependency injection
+- **shared_preferences**: Persistence of theme preferences
 
 ## Customization
 
@@ -125,13 +140,39 @@ Map<String, String> iconsMap = {
 
 ### Theming
 
-Modify the color scheme in `workout_selection.dart`:
+The app uses a centralized theme system defined in `app_theme.dart`:
+
 ```dart
-Color get backgroundColor => isDarkMode ? Color(0xFF0A0A0B) : Color(0xFFFAFAFC);
-Color get surfaceColor => isDarkMode ? Color(0xFF1A1A1D) : Colors.white;
-Color get textColor => isDarkMode ? Color(0xFFE8E8E8) : Color(0xFF2A2A2A);
-Color get subtitleColor => isDarkMode ? Color(0xFFB0B0B0) : Color(0xFF666666);
-Color get accentColor => isDarkMode ? Color(0xFF6366F1) : Color(0xFF4F46E5);
+// Light theme colors
+static final lightColors = {
+  'background': const Color(0xFFFAFAFC),
+  'surface': Colors.white,
+  'text': const Color(0xFF2A2A2A),
+  'subtitle': const Color(0xFF666666),
+  'accent': const Color(0xFF4F46E5),
+  'primary': const Color(0xFF005C5C),
+};
+
+// Dark theme colors
+static final darkColors = {
+  'background': const Color(0xFF0A0A0B),
+  'surface': const Color(0xFF1A1A1D),
+  'text': const Color(0xFFE8E8E8),
+  'subtitle': const Color(0xFFB0B0B0),
+  'accent': const Color(0xFF6366F1),
+  'primary': const Color(0xFF005C5C),
+};
+```
+
+To use the theme in any widget:
+
+```dart
+// Get theme from provider
+final themeService = Provider.of<ThemeService>(context);
+final isDarkMode = themeService.isDarkMode;
+
+// Use theme-aware colors
+final backgroundColor = isDarkMode ? const Color(0xFF0A0A0B) : const Color(0xFFFAFAFC);
 ```
 
 ## Contributing

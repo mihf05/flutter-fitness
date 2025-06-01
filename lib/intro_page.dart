@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'workout_selection.dart';
+import 'package:fitness_pro/theme_service.dart';
+import 'package:fitness_pro/theme_toggle_button.dart';
+import 'package:provider/provider.dart';
+import 'app_scaffold.dart';
 
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
@@ -86,12 +89,11 @@ class _IntroPageState extends State<IntroPage>
     _logoController.dispose();
     super.dispose();
   }
-
   void _navigateToWorkoutSelection() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const WorkoutSelectionPage(),
+            const AppScaffold(),
         transitionDuration: const Duration(milliseconds: 600),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
@@ -108,17 +110,34 @@ class _IntroPageState extends State<IntroPage>
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
+    // Get theme from provider
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
+    
+    // Define colors based on theme
+    final backgroundColor = isDarkMode ? const Color(0xFF0A0A0B) : const Color(0xFFFAFAFC);
+    final textColor = isDarkMode ? const Color(0xFFE8E8E8) : const Color(0xFF2A2A2A);
+    final subtitleColor = isDarkMode ? const Color(0xFFB0B0B0) : const Color(0xFF666666);
+    final accentColor = isDarkMode ? const Color(0xFF6366F1) : const Color(0xFF4F46E5);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFC),
-      body: SafeArea(
+      backgroundColor: backgroundColor,      body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              const Spacer(flex: 2),
+              // Theme toggle button in top right
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: ThemeToggleButton(),
+                ),
+              ),
+              
+              const Spacer(flex: 1),
               
               // Logo/GIF Section
               ScaleTransition(
@@ -179,11 +198,10 @@ class _IntroPageState extends State<IntroPage>
                   child: Column(
                     children: [
                       Text(
-                        'GymApp',
-                        style: GoogleFonts.bricolageGrotesque(
+                        'GymApp',                        style: GoogleFonts.bricolageGrotesque(
                           fontSize: 42,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF2A2A2A),
+                          color: textColor,
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -192,11 +210,10 @@ class _IntroPageState extends State<IntroPage>
                       
                       Text(
                         'Your personalized fitness journey\nstarts here',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.bricolageGrotesque(
+                        textAlign: TextAlign.center,                        style: GoogleFonts.bricolageGrotesque(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
-                          color: const Color(0xFF666666),
+                          color: subtitleColor,
                           height: 1.4,
                         ),
                       ),
@@ -216,9 +233,8 @@ class _IntroPageState extends State<IntroPage>
                     onTap: _navigateToWorkoutSelection,
                     child: Container(
                       width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF005C5C),
+                      height: 56,                      decoration: BoxDecoration(
+                        color: accentColor,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(

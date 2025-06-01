@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:multi_choice_widget/intro_page.dart';
+import 'package:fitness_pro/app_scaffold.dart';
+import 'package:fitness_pro/app_theme.dart';
+import 'package:fitness_pro/intro_page.dart';
+import 'package:fitness_pro/theme_service.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize theme service
+  final themeService = ThemeService();
+  await themeService.initialize();
+  
+  runApp(
+    ChangeNotifierProvider.value(
+      value: themeService,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -11,15 +27,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the current theme mode from the theme service
+    final themeService = Provider.of<ThemeService>(context);
+    
+    // Set system UI overlay style based on theme
+    SystemChrome.setSystemUIOverlayStyle(
+      themeService.isDarkMode
+          ? SystemUiOverlayStyle.light.copyWith(
+              statusBarColor: Colors.transparent,
+            )
+          : SystemUiOverlayStyle.dark.copyWith(
+              statusBarColor: Colors.transparent,
+            ),
+    );
+
     return MaterialApp(
       title: 'GymApp',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(),
-        useMaterial3: true,
-      ),
+      themeMode: themeService.themeMode,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       home: const IntroPage()
-        // home:  WorkoutSelectorPage()
+      // If you want to skip the intro page and go directly to the app with navbar:
+      // home: const AppScaffold()
     );
   }
 }
