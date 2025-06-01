@@ -1,12 +1,6 @@
 # Flutter Custom Choice Chips
-
-A beautiful and animated Flutter application showcasing custom choice chips with a modern UI design. This project demonstrates how to create interactive workout selection interface with smooth animations and theme toggling capabilities.
-
-## Demo
-
-| Light Mode Demo                                                                 | Dark Mode Demo                                                                  |
-|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
-| ![Light Mode Demo](https://i.postimg.cc/hjjfxxWq/localhost-54512-i-Phone-12-Pro-1.png) | ![Dark Mode Demo](https://i.postimg.cc/W1Bn5NpK/localhost-54512-i-Phone-12-Pro.png) |
+![Light Mode Demo](https://i.postimg.cc/DZvF1pg8/Blue-Modern-Mobile-Application-Presentation.jpg)
+![Dark Mode Demo](https://i.postimg.cc/PxSHyb3K/Blue-Modern-Mobile-Application-Presentation-1.jpg)
 
 ## Features
 
