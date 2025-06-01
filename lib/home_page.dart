@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:multi_choice_widget/theme_service.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatelessWidget {
-  final bool isDarkMode;
-
   const HomePage({
     super.key,
-    this.isDarkMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Get theme from provider
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
+    
     final Color backgroundColor = isDarkMode ? Color(0xFF0A0A0B) : Color(0xFFFAFAFC);
     final Color textColor = isDarkMode ? Color(0xFFE8E8E8) : Color(0xFF2A2A2A);
     final Color subtitleColor = isDarkMode ? Color(0xFFB0B0B0) : Color(0xFF666666);

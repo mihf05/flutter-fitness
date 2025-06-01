@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:multi_choice_widget/theme_service.dart';
+import 'package:provider/provider.dart';
 
 class ActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -15,9 +17,29 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color buttonColor = isEnabled ? Color(0xFF005C5C) : Color(0xFFE8E8E8); // richer teal
-    final Color textColor = isEnabled ? Colors.white : Color(0xFF757575);        // blue-gray for inactive text
-    final Color borderColor = isEnabled ? Color(0xFF00CA9B) : Color(0xFFBDBDBD); // matches your global border colors
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
+    
+    // Determine colors based on enabled state and theme
+    final Color activeColor = Color(0xFF005C5C); // Primary active color for both themes
+    final Color inactiveColorLight = Color(0xFFE8E8E8);
+    final Color inactiveColorDark = Color(0xFF2A2A2D);
+    final Color inactiveTextLight = Color(0xFF757575);
+    final Color inactiveTextDark = Color(0xFF8A8A8A);
+    final Color activeBorderLight = Color(0xFF00CA9B);
+    final Color activeBorderDark = Color(0xFF00CA9B);
+    final Color inactiveBorderLight = Color(0xFFBDBDBD);
+    final Color inactiveBorderDark = Color(0xFF3A3A3D);
+    
+    final Color buttonColor = isEnabled 
+        ? activeColor 
+        : (isDarkMode ? inactiveColorDark : inactiveColorLight);
+    final Color textColor = isEnabled 
+        ? Colors.white 
+        : (isDarkMode ? inactiveTextDark : inactiveTextLight);
+    final Color borderColor = isEnabled 
+        ? (isDarkMode ? activeBorderDark : activeBorderLight)
+        : (isDarkMode ? inactiveBorderDark : inactiveBorderLight);
 
 
     return InkWell(

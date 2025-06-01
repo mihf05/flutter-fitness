@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:multi_choice_widget/action_button.dart';
+import 'package:multi_choice_widget/theme_service.dart';
+import 'package:provider/provider.dart';
 
 import 'choice_chip_widget.dart';
 
@@ -255,11 +257,11 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
       ],
     );
   }
-  
-  @override
+    @override
   Widget build(BuildContext context) {
-    // Update isDarkMode based on Theme
-    isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    // Get theme from provider and update isDarkMode
+    final themeService = Provider.of<ThemeService>(context);
+    isDarkMode = themeService.isDarkMode;
     
     return SafeArea(
       child: Column(
@@ -437,119 +439,4 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   }
 }
 
-// Separate Theme Toggle Button Component
-class ThemeToggleButton extends StatefulWidget {
-  final bool isDarkMode;
-  final VoidCallback onToggle;
-
-  const ThemeToggleButton({
-    Key? key,
-    required this.isDarkMode,
-    required this.onToggle,
-  }) : super(key: key);
-
-  @override
-  State<ThemeToggleButton> createState() => _ThemeToggleButtonState();
-}
-
-class _ThemeToggleButtonState extends State<ThemeToggleButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-    
-    if (widget.isDarkMode) {
-      _controller.forward();
-    }
-  }
-
-  @override
-  void didUpdateWidget(ThemeToggleButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isDarkMode != oldWidget.isDarkMode) {
-      if (widget.isDarkMode) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Color surfaceColor = widget.isDarkMode ? Color(0xFF1A1A1D) : Colors.white;
-    Color textColor = widget.isDarkMode ? Color(0xFFE8E8E8) : Color(0xFF2A2A2A);
-    
-    return GestureDetector(
-      onTap: widget.onToggle,
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: surfaceColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: widget.isDarkMode 
-                  ? Colors.black.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.05),
-              blurRadius: widget.isDarkMode ? 8 : 12,
-              offset: Offset(0, widget.isDarkMode ? 4 : 6),
-            ),
-          ],
-        ),
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                // Sun Icon
-                Opacity(
-                  opacity: 1 - _animation.value,
-                  child: Transform.rotate(
-                    angle: _animation.value * 1.5,
-                    child: Icon(
-                      Icons.wb_sunny_rounded,
-                      color: textColor,
-                      size: 20,
-                    ),
-                  ),
-                ),
-                // Moon Icon
-                Opacity(
-                  opacity: _animation.value,
-                  child: Transform.rotate(
-                    angle: (1 - _animation.value) * -1.5,
-                    child: Icon(
-                      Icons.nightlight_round,
-                      color: textColor,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
+// Removed ThemeToggleButton to avoid conflict with theme_toggle_button.dart

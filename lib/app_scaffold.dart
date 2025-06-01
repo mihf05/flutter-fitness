@@ -3,7 +3,10 @@ import 'package:multi_choice_widget/bottom_navbar.dart';
 import 'package:multi_choice_widget/home_page.dart';
 import 'package:multi_choice_widget/profile_page.dart';
 import 'package:multi_choice_widget/progress_page.dart';
+import 'package:multi_choice_widget/theme_service.dart';
+import 'package:multi_choice_widget/theme_toggle_button.dart';
 import 'package:multi_choice_widget/workout_selection.dart';
+import 'package:provider/provider.dart';
 
 class AppScaffold extends StatefulWidget {
   const AppScaffold({super.key});
@@ -14,7 +17,6 @@ class AppScaffold extends StatefulWidget {
 
 class _AppScaffoldState extends State<AppScaffold> {
   int _currentIndex = 0;
-  bool _isDarkMode = false;
   late List<Widget> _pages;
 
   @override
@@ -26,13 +28,13 @@ class _AppScaffoldState extends State<AppScaffold> {
   void _updatePages() {
     _pages = [
       // Home page
-      HomePage(isDarkMode: _isDarkMode),
+      const HomePage(),
       // Workout selection page
       const WorkoutSelectionPage(),
       // Progress page
-      ProgressPage(isDarkMode: _isDarkMode),
+      const ProgressPage(),
       // Profile page
-      ProfilePage(isDarkMode: _isDarkMode),
+      const ProfilePage(),
     ];
   }
 
@@ -40,20 +42,16 @@ class _AppScaffoldState extends State<AppScaffold> {
     setState(() {
       _currentIndex = index;
     });
-  }
-  void _toggleTheme() {
-    setState(() {
-      _isDarkMode = !_isDarkMode;
-      _updatePages();
-    });
-  }
-
-  Color get backgroundColor => _isDarkMode ? const Color(0xFF0A0A0B) : const Color(0xFFFAFAFC);
-  Color get surfaceColor => _isDarkMode ? const Color(0xFF1A1A1D) : Colors.white;
-  Color get textColor => _isDarkMode ? const Color(0xFFE8E8E8) : const Color(0xFF2A2A2A);
-
-  @override
+  }  @override
   Widget build(BuildContext context) {
+    // Get theme provider
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
+    
+    // Define colors based on theme
+    final backgroundColor = isDarkMode ? const Color(0xFF0A0A0B) : const Color(0xFFFAFAFC);
+    final textColor = isDarkMode ? const Color(0xFFE8E8E8) : const Color(0xFF2A2A2A);
+    
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       child: Scaffold(
@@ -74,13 +72,7 @@ class _AppScaffoldState extends State<AppScaffold> {
             // Theme toggle button
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
-              child: IconButton(
-                icon: Icon(
-                  _isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                  color: textColor,
-                ),
-                onPressed: _toggleTheme,
-              ),
+              child: ThemeToggleButton(),
             ),
           ],
         ) : null,

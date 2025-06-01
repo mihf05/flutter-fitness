@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:multi_choice_widget/theme_service.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatelessWidget {
-  final bool isDarkMode;
-
   const ProfilePage({
     super.key,
-    this.isDarkMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Get theme from provider
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
+    
     final Color backgroundColor = isDarkMode ? Color(0xFF0A0A0B) : Color(0xFFF8F9FA);
     final Color surfaceColor = isDarkMode ? Color(0xFF1A1A1D) : Colors.white;
     final Color textColor = isDarkMode ? Color(0xFFE8E8E8) : Color(0xFF2A2A2A);

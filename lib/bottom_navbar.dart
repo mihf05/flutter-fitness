@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:multi_choice_widget/theme_service.dart';
+import 'package:provider/provider.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -12,8 +14,9 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if dark mode is enabled (based on MediaQuery)
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    // Get theme from provider
+    final themeService = Provider.of<ThemeService>(context);
+    final isDarkMode = themeService.isDarkMode;
 
     // Colors based on the app's theme system
     final backgroundColor = isDarkMode ? const Color(0xFF1A1A1D) : Colors.white;
